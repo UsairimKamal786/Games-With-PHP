@@ -1,112 +1,96 @@
 <?php
 session_start();
 
+// Initialize score if not set
+if (!isset($_SESSION['player_score'])) {
+    $_SESSION['player_score'] = 0;
+    $_SESSION['computer_score'] = 0;
+    $_SESSION['draws'] = 0;
+}
+
 $choices = ['rock', 'paper', 'scissors'];
-$robot_choice = '';
 $result = '';
 
-if (!isset($_SESSION['score'])) {
-    $_SESSION['score'] = 0;
-}
+if (isset($_POST['player_choice'])) {
+    $player = $_POST['player_choice'];
+    $computer = $choices[rand(0, 2)];
 
-if (isset($_POST['player'])) {
-    $player = $_POST['player'];
-    $robot_choice = $choices[rand(0, 2)];
-
-    if ($player === $robot_choice) {
-        $result = "🤝 Draw!";
+    if ($player === $computer) {
+        $result = "🤝 Draw! You both chose $player.";
+        $_SESSION['draws']++;
     } elseif (
-        ($player === 'rock' && $robot_choice === 'scissors') ||
-        ($player === 'paper' && $robot_choice === 'rock') ||
-        ($player === 'scissors' && $robot_choice === 'paper')
+        ($player === 'rock' && $computer === 'scissors') ||
+        ($player === 'paper' && $computer === 'rock') ||
+        ($player === 'scissors' && $computer === 'paper')
     ) {
-        $result = "✅ You win!";
-        $_SESSION['score']++;
+        $result = "✅ You Win! $player beats $computer.";
+        $_SESSION['player_score']++;
     } else {
-        $result = "❌ You lose!";
+        $result = "❌ You Lose! $computer beats $player.";
+        $_SESSION['computer_score']++;
     }
 }
+
+if (isset($_POST['reset'])) {
+    session_destroy();
+    header("Location: endless_rps.php");
+    exit;
+}
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Robot RPS</title>
+    <title>Endless Rock Paper Scissors</title>
     <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            background: #eef;
-            margin-top: 30px;
-        }
-        h1 { font-size: 2em; color: #333; }
+        body { font-family: Arial; background: #f8f8f8; text-align: center; padding-top: 40px; }
+        h1 { color: #333; }
         button {
             padding: 10px 20px;
             margin: 10px;
-            font-size: 1.2em;
+            font-size: 18px;
             cursor: pointer;
         }
-        .robot-hand {
-            width: 100px;
-            height: 100px;
-            background: gray;
-            margin: 20px auto;
-            border-radius: 50%;
-            position: relative;
-            animation: moveHand 1s ease;
-        }
-        @keyframes moveHand {
-            0% { transform: rotate(-20deg); }
-            50% { transform: rotate(20deg); }
-            100% { transform: rotate(0deg); }
-        }
-        .draw-area {
-            font-size: 2em;
-            color: darkblue;
-            margin-top: 20px;
-            min-height: 50px;
-            animation: drawText 1s steps(10) 1;
-            white-space: nowrap;
-            overflow: hidden;
-            border-right: 3px solid black;
-        }
-        @keyframes drawText {
-            from { width: 0; }
-            to { width: 100%; }
-        }
         .score {
-            font-size: 18px;
-            margin-top: 10px;
+            margin: 20px auto;
+            font-size: 20px;
+        }
+        .result {
+            font-size: 22px;
+            margin: 20px;
+            color: #006600;
+        }
+        .reset-btn {
+            margin-top: 30px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-<h1>🤖 Robot Rock, Paper, Scissors</h1>
+    <h1>🎮 Endless Rock Paper Scissors</h1>
 
-<form method="post">
-    <button name="player" value="rock">🪨 Rock</button>
-    <button name="player" value="paper">📄 Paper</button>
-    <button name="player" value="scissors">✂️ Scissors</button>
-</form>
+    <form method="post">
+        <button name="player_choice" value="rock">🪨 Rock</button>
+        <button name="player_choice" value="paper">📄 Paper</button>
+        <button name="player_choice" value="scissors">✂️ Scissors</button>
+    </form>
 
-<div class="robot-hand"></div>
+    <div class="result"><?php echo $result; ?></div>
 
-<?php if ($robot_choice): ?>
-    <div class="draw-area">
-        Robot plays:
-        <?php
-        if ($robot_choice == 'rock') echo "🪨 Rock";
-        if ($robot_choice == 'paper') echo "📄 Paper";
-        if ($robot_choice == 'scissors') echo "✂️ Scissors";
-        ?>
+    <div class="score">
+        🧑 You: <?php echo $_SESSION['player_score']; ?> |
+        💻 Computer: <?php echo $_SESSION['computer_score']; ?> |
+        🤝 Draws: <?php echo $_SESSION['draws']; ?>
     </div>
-<?php endif; ?>
 
-<?php if ($result): ?>
-    <h2><?php echo $result; ?></h2>
-<?php endif; ?>
-
-<div class="score">Your Score: <?php echo $_SESSION['score']; ?></div>
+    <form method="post">
+        <button class="reset-btn" name="reset">🔁 Reset Game</button>
+    </form>
 
 </body>
 </html>
