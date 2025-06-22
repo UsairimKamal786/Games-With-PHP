@@ -33,7 +33,7 @@ if (isset($_POST['player_choice'])) {
 
 if (isset($_POST['reset'])) {
     session_destroy();
-    header("Location: endless_rps.php");
+    header("Location: rock_paper_scissors.php");
     exit;
 }
 ?>
